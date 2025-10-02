@@ -1,0 +1,130 @@
+\documentclass{article}
+
+\input{lib.tex}
+
+\title{Notes de TIPE : Projet LeyTrack}
+\author{Olivier et Yoan - \href{https://github.com/aweirdwhale}{Aweirdwhale}, \href{https://github.com/eolium}{Eolium}}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction}
+
+Le projet LeyTrack vise à répondre à la problématique suivante :
+
+\bigskip
+
+\emph{
+Comment localiser des personnes (=appareils) dans une foule, de manière anonyme (donc sans accès gps), à l'aide d'un système de coordonnées locales relatives à un repère ?
+}
+
+\bigskip
+
+Ce système pourrait être utilisé dans les festivals ou organisation dans lesquels on ne peut accéder à internet (ni au système GPS), ou dans lesquels on souhaite localiser du personnel de manière anonyme.
+\\
+Ce projet s'est répartie en plusieurs parties, pour répondre à différentes sous-problèmes confrontés lors de la conception d'une solution.
+\\
+Dans tout le document, une personne sera assimilé à un boitier ou un sommet $s$.
+
+
+\section{Mesure des coordonnées relatives}
+
+\subsection{Ondes radios}
+
+Nous avons d'abord pensé à utiliser des ondes radios (électromagnétiques), mais, trop rapides, elles nécessitent un circuit capable de mesurer des nano-secondes (absurde pour une utilisation raisonnable)
+
+\bigskip
+
+\subsection{Ondes ultrasons}
+
+
+Cela peut fonctionner, mais il y a quelques problèmes à résoure :
+
+\begin{itemize}
+    \item Il faut étalonner la vitesse du son par rapport à l'environnement. Deux solutions :
+    
+    \begin{itemize}
+        \item Mesurer la distance réelle entre deux points fixes, et déduire la vitesse du son des distances théoriques de ces points fixes
+        \item Mesurer la pression, la température et d'autres données pour en déduire la vitesse du son
+    \end{itemize}
+
+    \item Les ondes ultrasons se dirigent en un cône restreint. Solution : On peut fabriquer un "phare" à ultrasons, qui va émettre un signal ultrason en tournant. Pour simplifier grandement le fonctionnement des repères, il émet un signal différent pour chaque angle.
+\end{itemize}
+
+
+\subsection{Le phare à ultrasons}
+
+\warning{Schéma d'un sommet au milieu de 3 phares, avec chacun différents cônes d'émissions, etc...\bigskip}
+
+Nous avons d'abord voulu éviter autant que possible  l'utilisation de points fixes, mais cela nécessiterait une onde qui se diffuse très bien, et suffisament lentement pour être mesurée. N'ayant pas trouvé de solutions, nous nous sommes rabattus sur les points fixes, que nous pouvons alors utiliser comme nous le voulons comme des phares pour émettre des radios dans toutes les directions. Ces points fixes permettent aussi de centraliser le réseau et donc d'en simplifier le fonctionnement.
+
+Pour fonctionner, le phare émet un signal ultrason, qui change à chaque fois qu'il tourne d'un angle $\theta=\frac{2\pi}{n}$ avec $n$ le nombre de "parties" que l'on veut.
+
+Un sommet $s_0$ peut alors se repérer par rapport à ces points fixes, d'après l'angle qu'ils possèdent par rapport à chacun d'eux au nord, et les distances qu'il a mesurer
+
+Pour avoir un nord commun, et être en phase, le phare tourne de sorte qu'à chaque "début de seconde", il se retrouve au nord, et qu'un tour complet dure 1 seconde.
+
+Une fois les calculs réalisés, la position est n-uplet composé des distances et des angles mesurés.
+
+Cette position est transmise publiquement au réseau pour être utilisé plus tard.
+
+
+\section{Communication avec le réseau}
+
+Cette partie s'intéresse d'avantage à la communication d'un sommet $s_0$ avec le réseau, pour qu'il puisse se connecter à un réseau, communiquer sa position ou des messages pré-enregistrés ou personnalisés, ou déterminer la direction et la distance d'un autre sommet $s'$ pour le rejoindre.
+
+\subsection{Structure primaire du réseau}
+
+Le réseau est composé de boitiers (=sommets) $s_i$, et de plusieurs (à priori 3) points fixes. Un point fixe est alors sélectionné comme point central du réseau, qu'on appelle routeur.
+
+\warning{Schéma de la structure du réseau}
+
+\subsection{Partition du temps de parole des sommets}
+
+
+On se pose sur des périodes $T$ fixées à l'avances, ici par exemple $T=1$s. Chaque période est numérotée, pour permettre d'augmenter le nombre de temps de paroles, ou forcer un temps de silence. On découpe chaque période en différents blocs :
+
+\warning{Schéma d'une période temporelle}
+
+
+\begin{itemize}
+    \item Ping de départ : À chaque début de période, le routeur émet un PING d'un code choisi, pour que tout le monde se synchronise dessus.
+    \item Bloc ANNONCE : dans ce bloc, un nouveau sommet peut s'annoncer au réseau. Alors le routeur l'ajoute à sa liste des sommets actuels, et lui alloue un temps de parole, qu'il annonce après.
+    \item Bloc CALL : dans ce bloc, le routeur parle, et donne :
+    \begin{itemize}
+        \item le numéro de la période actuelle...
+        \item l'allocation de temps de paroles à différents sommets
+    \end{itemize}
+    le numéro de la période actuelle, etc...
+    \item Bloc TALK : ce bloc est découpé en un ensemble de temps de paroles, alloués à chaque membre du réseau. Pour permettre d'allouer un plus grand nombre de temps de paroles, s'il y a beaucoup de noeuds, ou si un noeud veut envoyer un sms, on peut créer une autre période.
+\end{itemize}
+
+
+Dans cette configuration, un temps de parole est donc un couple (n° période, n° talk).
+
+
+\subsection{Connection au réseau}
+
+Un sommet $s_0$ souhaite se connecter au réseau, il doit suivre les étapes suivantes :
+
+\begin{itemize}
+    \item Le sommet se cale sur le PING du réseau pour être "en rythme" (en phase).
+    \item durant le bloc ANNONCE, pour chaque bit de son code :
+    \begin{itemize}
+        \item Si le bit est positif, il l'émet.
+        \item Si le bit est négatif, il n'émet rien (classique) et il écoute. Si quelqu'un d'autre émet à ce moment, ce dernier a un code supérieur, donc $s_0$ le laisse parler, arrête sa connection et attend la période suivante.
+    \end{itemize}
+    \item Le sommet attend la période suivante
+    \item S'il est bien authentifié (code erreur OK), durant son CALL le routeur alloue un premier temps de parole avec l'émission de (ID $s_0$, n° période, n° temps de parole). Sinon, il retente à la période suivante.
+\end{itemize}
+
+\warning{Réaliser un diagramme de flot de contrôle}
+
+\subsection{Allocation d'un temps de parole}
+
+
+
+
+\subsection{Parole dans son bloc talk}
+
+\end{document}
