@@ -319,8 +319,6 @@ let astar initial =
     *)
     let u, dist_u = Option.get (Heap.extract_min ouverts) in
 
-    Printf.printf "taille de la file : %d\n" (Heap.length ouverts);
-
     if not (Hashtbl.mem closed u) then begin
       Hashtbl.add closed u ();
 
