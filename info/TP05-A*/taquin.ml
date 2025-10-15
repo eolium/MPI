@@ -315,14 +315,13 @@ let astar initial =
 
     assert (premier = second + 1);
 
-    Printf.printf "%d\n" second;
+    Printf.printf "Taille de file : %d\n" second;
     
     if egal_etats u final then begin
       (*
       On a trouvé la sortie, donc on sort de la boucle,
       et pour ça on passe sortie (condition de boucle) à false
       *)
-      Printf.printf "test\n";
       sortie := false
     end else begin
 
