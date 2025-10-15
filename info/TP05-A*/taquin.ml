@@ -280,9 +280,15 @@ let astar initial =
   Hashtbl.add dist initial 0;
 
   (*
+    On crée un ensemble des etats déjà parcourus pour ne pas retomber dessus.
+  *)
+  let closed = Hashtbl.create 100 in
+
+  (*
     De même, on stocke les parents sous forme d'une table de hashage
   *)
   let parents = Hashtbl.create 100 in
+  Hashtbl.add parents initial initial;
 
   (*
     On utilise le module Heap (files de priorité) donné
@@ -298,76 +304,68 @@ let astar initial =
     On insère la source avec comme priorité son h
     (cette phrase est bizarre mais je saurais pas dire exactement dans quel contexte)
   *)
-  Heap.insert ouverts (initial, initial.h);
+  Heap.insert_or_decrease ouverts (initial, initial.h);
 
-  (* Pour pouvoir sortir de la boucle *)
-  let sortie = ref true in
+  (*
+    On sort de la boucle dès que out != None
+  *)
+  let out = ref None in
 
   
-  while !sortie &&  Heap.length ouverts > 0 do
+  while !out = None && Heap.length ouverts > 0 do
     (*
     taille de ouverts > 0 (par condition de la boucle while),
     donc on peut extraire un élément avec Option.get en étant safe.
     *)
-    let premier = Heap.length ouverts in
     let u, dist_u = Option.get (Heap.extract_min ouverts) in
-    let second = Heap.length ouverts in
 
-    assert (premier = second + 1);
+    Printf.printf "taille de la file : %d\n" (Heap.length ouverts);
 
-    Printf.printf "Taille de la file : %d\n" second;
-    
-    if egal_etats u final then begin
-      (*
-      On a trouvé la sortie, donc on sort de la boucle,
-      et pour ça on passe sortie (condition de boucle) à false
-      *)
-      sortie := false
-    end else begin
+    if not (Hashtbl.mem closed u) then begin
+      Hashtbl.add closed u ();
 
-      List.iter (fun move ->
-
-        let v = copie u in
-        applique v move;
-        
-        let d = dist_u + 1 in
-
-
+      if egal_etats u final then begin
         (*
-        Si la distance v n'a pas encore été trouvé (= cas du None),
-        alors on le remplace par "l'infini", en pratique un entier très grand 
+        On a trouvé la sortie, donc on sort de la boucle,
+        et pour ça on passe sortie (condition de boucle) à false
         *)
-        let dist_v = match Hashtbl.find_opt dist v with
-          | Some valeur -> valeur
-          | None -> -1
-        in
+        out := Some (reconstruit parents u);
+      end else begin
 
-        if dist_v = (-1) || d < dist_v then begin
-          Hashtbl.add parents v u;
-          Hashtbl.add dist v d;
+        List.iter (fun move ->
+
+          let v = copie u in
+          applique v move;
           
-          if Heap.mem ouverts v then
-            Heap.decrease_priority ouverts (v, (d + dist_v))
-          else
-            Heap.insert ouverts (v, (d + dist_v))
-        end
-      ) (mouvements_possibles u);
+          let d = (match Hashtbl.find_opt dist u with
+            | None -> Int.max_int
+            | Some d -> d
+          ) + 1 in
+
+          (*
+          Si la distance v n'a pas encore été trouvé (= cas du None),
+          alors on le remplace par "l'infini", en pratique un entier très grand 
+          *)
+          let condition = match Hashtbl.find_opt dist v with
+          | Some valeur -> d < valeur
+          | None -> true
+          in
+
+          if condition then begin
+            Hashtbl.replace parents v u;
+            Hashtbl.replace dist v d;
+            
+            Heap.insert_or_decrease ouverts (v, d + v.h)
+          end
+        ) (mouvements_possibles u);
+      end
+
     end
   done;
 
-
-  if not (!sortie) then
-    (*
-      On est sorti de la boucle avant sa fin,
-      donc on a trouvé une solution. On la reconstruit avec la fonction reconstruit.
-    *)
-    reconstruit parents final
-  else
-    (*
-      On est arrivé à la fin de la boucle sans trouvé de solution, :sob:
-    *)
-    []
-
+  match !out with
+  | Some lst -> lst
+  | None -> raise Aucun_chemin
 
 
 (* Algorithme IDA* *)
