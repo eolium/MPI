@@ -245,15 +245,24 @@ let egal_etats (etat1: etat) (etat2: etat) =
   let taille = Array.length etat1.grille in
   let out = ref true in
   
-  for i = 0 to taille-1 do
-    for j = 0 to taille-1 do
-      if !out && etat1.grille.(i).(j) <> etat2.grille.(i).(j) then
-        out := false
-    done
-  done;
+  if etat1.i <> etat2.i || etat1.j <> etat2.j then begin
+    false
 
-  !out
+  end else begin
+    let i, j = ref 0, ref 0 in
+    while !out && !i < taille do
+      j := 0;
+      while !out && !j < taille do
+        if !i <> etat1.i && !j <> etat1.j && etat1.grille.(!i).(!j) <> etat2.grille.(!i).(!j) then begin
+          out := false
+        end;
+        j:=!j+1
+      done;
+      i:=!i+1
+    done;
 
+    !out
+  end
 
 let astar initial =
   (*
@@ -300,17 +309,25 @@ let astar initial =
     taille de ouverts > 0 (par condition de la boucle while),
     donc on peut extraire un élément avec Option.get en étant safe.
     *)
+    let premier = Heap.length ouverts in
     let u, dist_u = Option.get (Heap.extract_min ouverts) in
+    let second = Heap.length ouverts in
+
+    assert (premier = second + 1);
+
+    Printf.printf "%d\n" second;
     
     if egal_etats u final then begin
       (*
       On a trouvé la sortie, donc on sort de la boucle,
       et pour ça on passe sortie (condition de boucle) à false
       *)
+      Printf.printf "test\n";
       sortie := false
     end else begin
 
       List.iter (fun move ->
+
         let v = copie u in
         applique v move;
         
