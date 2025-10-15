@@ -315,7 +315,7 @@ let astar initial =
 
     assert (premier = second + 1);
 
-    Printf.printf "Taille de file : %d\n" second;
+    Printf.printf "Taille de la file : %d\n" second;
     
     if egal_etats u final then begin
       (*
@@ -339,10 +339,10 @@ let astar initial =
         *)
         let dist_v = match Hashtbl.find_opt dist v with
           | Some valeur -> valeur
-          | None -> Int.max_int
+          | None -> -1
         in
 
-        if d < dist_v then begin
+        if dist_v = (-1) || d < dist_v then begin
           Hashtbl.add parents v u;
           Hashtbl.add dist v d;
           
