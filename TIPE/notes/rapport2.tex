@@ -1,0 +1,152 @@
+\documentclass{article}
+
+\input{lib.tex}
+
+\title{Notes de TIPE : Projet LeyTrack}
+\author{Yoan - \href{https://github.com/eolium}{Eolium}}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction}
+
+Le projet LeyTrack vise à répondre aux problématiques suivantes :
+
+\bigskip
+
+\emph{Comment localiser des personnes (=appareils) dans une foule, de manière anonyme et sûre}
+
+\bigskip
+
+Le système est décentralisé, donc chaque individu doit avoir un fonctionnement égale.
+On le décompose en plusieurs fonctions à remplir :
+
+- Récupérer sa localisation (locale ou absolue)
+- Communiquer pour récupérer la localisation d'autres individus ou transmettre sa localisation.
+- Communiquer pour transmettre des informations tels que des messages textuelles
+- Intéragir avec l'utilisateur (écran + boutons)
+
+
+\section{Conception du boitier}
+
+Pour concevoir le boitier, on utilisera un micro-processeur (type esp ou arduino), que l'on munira d'autres composants, pour intéragir avec son environnement. On ajoutera une batterie Li-ion pour permettre son fonctionnement autonome.
+
+
+\section{Mesure des coordonnées}
+
+On peut récupérer les coordonnées de différentes manières :
+
+\begin{itemize}
+    \item Système GPS : le plus simple à utiliser, mais 2 inconvénients :
+    \begin{itemize}
+        \item Il nécessite une connection GPS
+        \item Chaque prise de mesure est un peu lourde en calcul et en temps. Il faut donc les limiter
+    \end{itemize}
+
+    \item Localisation relative, par communication au réseau :
+    \begin{itemize}
+        \item Phare ultrason : Un phare émet des ultrasons dans toutes les directions, en se tournant au nord toutes les secondes
+        \begin{itemize}
+            \item Un seul boitier : nécessité de connaître sa localisation globale
+            \item Au moins 3 boitiers : localisation possible par triangulation
+        \end{itemize}
+        Les principaux inconvénients sont :
+        \begin{itemize}
+            \item Nécessité d'installer des boitiers
+            \item Portée limitée des ultrasons
+            \item Portée limitée par les murs et les personnes
+        \end{itemize}
+    \end{itemize}
+
+    \item Localisation absolue par reconnaissance de l'environnement :
+    \begin{itemize}
+        \item Le boitier prend une photo de l'environnement, reconnaît les parties immobiles, et en déduit sa position.
+        \item L'utilisateur donne au boitier des instruction sur son environnement, et le boitier en déduit sa position
+    \end{itemize}
+    Ces solutions sont beaucoup plus complexes à mettre en place, mais pourraient se révéler utiles pour obtenir sa position dans une large zone vierge à partir de données satellites préalablement sauvegardées.
+\end{itemize}
+
+Finalement, la solution choisie est le système GPS, mais l'étude d'une localisation relative par données téléchargées pourrait se révéler intéressante.
+
+On optera donc pour une carte GPS.
+
+
+\section{Communication avec le réseau}
+
+\subsection{Définition du réseau}
+
+On veut concevoir un réseau capable de permettre la transmission de coordonnées et de messages, l'annonce d'un nouveau boitier, et la fusion de 2 réseaux. Autrement dit, dans le réseau, il faut pouvoir gérer les différentes situations :
+
+\begin{itemize}
+    \item Un boitier $s_0$ s'ajoute au réseau $R$.
+    \item La fusion de deux réseaux.
+    \item un boitier émet une requête pour :
+    \begin{itemize}
+        \item demander la localisation
+        \item envoyer sa localisation
+        \item demander d'allouer un temps de parole.
+    \end{itemize}
+\end{itemize}
+
+
+Pour simplifier les opérations, on pose qu'un boitier n'est jamais seul, mais crée un réseau à son allumage.
+Ainsi, on doit simplement gérer :
+
+\begin{itemize}
+    \item L'initialisation d'un réseau
+    \item La fusion de deux réseaux.
+    \item Une requête
+\end{itemize}
+
+On remarque qu'il faut s'assurer de la synchronisation des boitiers dans un réseau, au moins au moment de la fusion de deux réseaux.
+
+On définie alors un réseau comme un découpage d'une ou plusieurs périodes (pour simplifier une période dure $1s$) en temps de paroles. Ainsi, une période doit contenir :
+
+\begin{itemize}
+    \item le PING : Un signal particulier émis à $t=0s$, pour que tous les sommets se synchronisent.
+    \item le NOM : Le réseau émet un signal qui représente son ID, unique
+    \item le CALL : Un ensemble de temps de paroles durant lequel chaque boitier peut faire une requête, réalisée si acceptables à partir de la période suivante.
+    \item le TAS : Un large ensemble de temps de paroles durant lequel chaque boitier peut utiliser sa requête. On précise que si tous les temps de parole sont utilisés, on ouvre une nouvelle période. Les boitiers doivent alors pouvoir déduire dans quelle seconde ils se trouve
+\end{itemize}
+
+Ainsi, si le réseau utilise plusieurs périodes, $T_1$, $T_2$, $T_3$, \dots $T_n$, on réalise un roulement entre les périodes, et si à la fin d'une période personne n'a parlé (période vide), on la supprime, mais pour simplifier le code, on ne remet pas les périodes au débuts (donc possibles trous)
+
+
+\subsection{Initialisation d'un réseau}
+
+Pour initialiser un réseau, un boitier commence tout simplement à émettre quand il peut, et si un réseau était déjà présent, on entre dans le cas de la fusion de deux réseaux.
+
+
+
+\subsection{Fusion de deux réseaux}
+
+On peut détecter la présence d'un autre réseau par un code correcteur d'erreur. Si la quantité d'erreur est trop importante, on admet qu'il y a un autre réseau (qui peut être vide dans le cas d'une véritable erreur). On lance alors la fusion, qui dure plusieurs périodes.
+
+\begin{itemize}
+    \item On annule toutes les tâches/requêtes en cours.
+    \item Les 2 réseaux 
+\end{itemize}
+
+
+
+
+\newpage
+
+\section*{Idée pour le handshake anonyme}
+
+nombre commun : $M$
+
+ID : $p$
+
+annonce : $M^p$
+
+\bigskip
+
+Problème : Sachant $A, B, a, b$, déterminer $p$ tel que :
+
+$$A^p = a$$
+$$B^p = b$$
+
+$$(A^{\frac{p}{2}}-B^{\frac{p}{2}})(A^{\frac{p}{2}}+B^{\frac{p}{2}})=a-b$$
+
+\end{document}

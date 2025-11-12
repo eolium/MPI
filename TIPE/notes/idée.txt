@@ -1,0 +1,8 @@
+Nombre commun : M
+
+ID : p sur 256 bits
+
+poignée de main : M^p
+
+A^p = N
+B^p = P
