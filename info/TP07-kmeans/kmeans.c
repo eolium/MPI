@@ -45,9 +45,9 @@ void maj_isobar(const pixel* img, const int* cluster, int N,
 
   for (int i = 0; i < k; i++) {
     if (card[i] > 0) {
-      isobar[i].b = (uint8_t) (somme[4 * i + 2] / card[i]);
       isobar[i].r = (uint8_t) (somme[4 * i + 0] / card[i]);
       isobar[i].g = (uint8_t) (somme[4 * i + 1] / card[i]);
+      isobar[i].b = (uint8_t) (somme[4 * i + 2] / card[i]);
       isobar[i].a = (uint8_t) (somme[4 * i + 3] / card[i]);
     }
   }
