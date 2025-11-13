@@ -124,7 +124,7 @@ int kmeans(int k, const pixel* img, int N, int* cluster, pixel* isobar) {
   int iterations = 0;
   int nb_modifs = 1;
 
-  while (nb_modifs) {
+  while (nb_modifs > 0) {
     nb_modifs = 0;
 
     for (int i = 0; i < k; i++) {
