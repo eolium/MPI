@@ -249,31 +249,27 @@ let rec suffix r =
   | Star(u) -> suffix u
 
 
-let combine u v =
+let combine (u: 'a list) (v: 'b list) : (('a * 'b) list) =
   let out = ref [] in
 
-  List.iter (fun e ->
-    List.iter (fun d ->
-      out := (d, e)::(!out)
-    ) u
-  ) v;
+  List.iter (fun a ->
+    List.iter (fun b ->
+      out := (a, b)::(!out)
+    ) v
+  ) u;
 
-  !out
-
+  List.sort compare !out
 
 
 let rec factor (r: 'a regex) : ('a * 'a) list =
-  if is_empty r then [] else
-
   match r with
   | Empty -> []
   | Eps -> []
   | Letter(a) -> []
-  | Concat(Letter(a), Letter(b)) -> [(a, b)]
   | Union(u, v) -> merge (factor u) (factor v)
   | Concat(u, v) -> merge
     (merge (factor u) (factor v))
-    (combine (suffix u) (prefix v)) 
+    (combine (suffix u) (prefix v))
   | Star u -> merge
     (factor u)
     (combine (suffix u) (prefix u))
@@ -290,9 +286,40 @@ let rec number_of_letters r =
 
 
 
-let linearize x = failwith "not implemented"
-let max_letter x = failwith "not implemented"
-let glushkov x = failwith "not implemented"
+let linearize (r: 'a regex) : (('a * int) regex) =
+  let i = ref 0 in
+
+  let rec linearize_i (r: 'a regex) : (('a * int) regex) =
+    match r with
+    | Empty -> Empty
+    | Eps -> Eps
+    | Letter(a) -> i := !i+1; Letter((a, !i))
+    | Union(u, v) -> 
+      let up = linearize_i u in
+      let vp = linearize_i v in
+      Union(up, vp)
+    | Concat(u, v) -> 
+      let up = linearize_i u in
+      let vp = linearize_i v in
+      Concat(up, vp)
+    | Star(u) -> Star(linearize_i u)
+  in
+
+  linearize_i r
+
+
+let rec max_letter r = 
+  match r with
+  | Empty | Eps -> -1
+  | Letter(i) -> i
+  | Union(u, v) | Concat(u, v) -> max (max_letter u) (max_letter v)
+  | Star(u) -> max_letter u
+
+
+
+let glushkov (e: state regex) : nfa = failwith "not implemented"
+
+
 let delta_set x = failwith "not implemented"
 
 let has_accepting_state x = failwith "not implemented"

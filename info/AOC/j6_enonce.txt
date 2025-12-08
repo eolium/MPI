@@ -1,0 +1,72 @@
+Après avoir aidé les elfes en cuisine, vous faisiez une pause et les aidiez à rejouer une scène de film quand, avec un enthousiasme débordant, vous avez sauté dans la goulotte à ordures !
+
+Une courte chute plus tard, vous vous retrouvez dans un broyeur à ordures. Malheureusement, la porte est verrouillée magnétiquement.
+
+Alors que vous cherchez une issue, une famille de céphalopodes s'approche de vous ! Ils sont presque certains de pouvoir ouvrir la porte, mais cela prendra du temps. En attendant, ils se demandent si vous pouvez aider la plus jeune à faire ses devoirs de maths.
+
+Les maths des céphalopodes ne sont pas si différentes des maths classiques. La feuille d'exercices (votre entrée pour le puzzle) consiste en une liste de problèmes ; chaque problème comporte un groupe de nombres à additionner (+) ou à multiplier (*).
+
+Cependant, les problèmes sont présentés de façon un peu étrange ; ils semblent alignés les uns à côté des autres dans une très longue liste horizontale. Par exemple :
+
+123 328 51 64
+
+45 64 387 23
+
+6 98 215 314
+* + * +
+
+Les nombres de chaque problème sont disposés verticalement ; en bas du problème figure le symbole de l’opération à effectuer. Les problèmes sont séparés par une colonne complète d’espaces. L’alignement horizontal des nombres au sein de chaque problème n’est pas pris en compte.
+
+Ainsi, cette feuille d’exercices contient quatre problèmes :
+
+123 × 45 × 6 = 33 210
+
+328 + 64 + 98 = 490
+
+51 × 387 × 215 = 4 243 455
+
+64 + 23 + 314 = 401
+
+Pour vérifier leurs réponses, les élèves doivent calculer le total en additionnant les réponses à tous les problèmes. Dans cette feuille de calcul, le total est de 33 210 + 490 + 4 243 455 + 401 = 4 277 556.
+
+Bien sûr, la feuille de calcul réelle est beaucoup plus large. Vous devrez la dérouler complètement pour pouvoir lire clairement les problèmes.
+
+Résolvez les problèmes de la feuille de calcul. Quel est le total obtenu en additionnant toutes les réponses aux différents problèmes ?
+
+Pour commencer, préparez votre puzzle.
+
+
+
+--- Deuxième partie ---
+
+
+Les grands céphalopodes reviennent voir comment se passent les choses. Constatant que votre total ne correspond pas à celui attendu sur la feuille de calcul, ils réalisent qu'ils ont oublié d'expliquer comment lire les calculs des céphalopodes.
+
+Les calculs des céphalopodes s'écrivent de droite à gauche, en colonnes. Chaque nombre est placé dans sa propre colonne, le chiffre le plus significatif en haut et le moins significatif en bas. (Les problèmes sont toujours séparés par une colonne d'espaces, et le symbole en bas de chaque problème indique toujours l'opérateur à utiliser.)
+
+Voici à nouveau l'exemple de feuille de calcul :
+
+123 328 51 64
+
+45 64 387 23
+
+6 98 215 314
+* + * +
+
+123	328	51	64
+45	64	387	23
+6	98	215	314
+
+En lisant les problèmes de droite à gauche, colonne par colonne, on constate qu'ils sont maintenant très différents :
+
+Le problème le plus à droite est : 4 + 431 + 623 = 1058
+
+Le deuxième problème en partant de la droite est : 175 × 581 × 32 = 3253600
+
+Le troisième problème en partant de la droite est : 8 + 248 + 369 = 625
+
+Enfin, le problème le plus à gauche est : 356 × 24 × 1 = 8544
+
+Le total est donc de 1058 + 3 253 600 + 625 + 8 544 = 3 263 827.
+
+Résolvez à nouveau les problèmes de la feuille d'exercices. Quel est le total obtenu en additionnant toutes les réponses aux différents problèmes ?
